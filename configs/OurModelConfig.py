@@ -20,7 +20,7 @@ class OurModelConfig(ExperimentConfig, BaseModelConfig, LoggerConfig, DatasetInf
     
     # 模型维度参数
     input_size: int = 21
-    d_model: int = 56 
+    d_model: int = 96 
 
     # Transformer 结构
     att_method: str = 'self'

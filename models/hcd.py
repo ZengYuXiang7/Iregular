@@ -249,12 +249,10 @@ class HCD:
             sub_model = GraNDAG(input_dim=data.shape[1], device_type="gpu")
         if method == "GOLEM":
             sub_model = GOLEM(
-                GOLEM(
-                    num_iter=5000,
-                    graph_thres=self.thresh,
-                    device_type="gpu",
-                    learning_rate=0.05,
-                )
+                num_iter=5000,
+                graph_thres=self.thresh,
+                device_type="gpu",
+                learning_rate=0.05,
             )
 
         # 训练子图模型，学习邻接（因果）矩阵；不同算法统一暴露 causal_matrix 属性
@@ -310,7 +308,7 @@ class HCD:
         # print(seperatesets)
         # print(len(seperatesets))
         
-        # 计算所有子图集合的交集（公共碰撞点集合），并追加记录到 setsinf.csv
+        # 计算所有子图集合的交集（公共碰撞点集合）
         res = seperatesets[0]
         for i in seperatesets:
             if i == seperatesets[0]:

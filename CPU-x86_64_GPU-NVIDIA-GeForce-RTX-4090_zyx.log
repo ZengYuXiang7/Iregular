@@ -1,0 +1,6 @@
+|2025-10-28 10:28:10| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 96
+|2025-10-28 10:28:10| MAE - 0.5613 MSE - 0.5915 RMSE - 0.7618 MAPE - 7.2453 NMAE - 0.9205 NRMSE - 0.9517 Acc_10 - 0.0094 KendallTau - 0.1917 SpearmanRho - 0.2657 train_time - 11.4471
+|2025-10-28 11:26:42| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 96
+|2025-10-28 11:26:42| MAE - 0.5323 MSE - 0.5278 RMSE - 0.7254 MAPE - 6.1779 NMAE - 0.8730 NRMSE - 0.9062 Acc_10 - 0.0068 KendallTau - 0.2873 SpearmanRho - 0.4083 train_time - 222.5481
+|2025-10-28 12:12:44| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 96
+|2025-10-28 12:12:44| MAE - 0.5323 MSE - 0.5278 RMSE - 0.7254 MAPE - 6.1779 NMAE - 0.8730 NRMSE - 0.9062 Acc_10 - 0.0068 KendallTau - 0.2873 SpearmanRho - 0.4083 train_time - 150.7791

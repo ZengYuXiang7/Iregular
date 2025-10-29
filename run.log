@@ -1,0 +1,11 @@
+[2025-10-28 10:06:50] Experiment Start!!!
+[2025-10-28 10:28:13] try_exp: 1, Metric: 0.1917
+[2025-10-28 11:26:45] try_exp: 2, Metric: 0.2873
+[2025-10-28 11:26:45] ==> Best try_exp: 2, local_best_metric: 0.2873
+
+[2025-10-28 11:26:45] The Best Hyperparameters: {'try_exp': 2}
+
+[2025-10-28 11:26:45] Running at 2025-10-28 11:26: python run_train.py --exp_name OurModelConfig --retrain 1 --try_exp 2
+
+[2025-10-28 12:12:47] All commands executed successfully.
+

@@ -16,7 +16,7 @@ def evaluate_model_efficiency(datamodule, model, log, config):
     model = model.to(device)
     model.eval()
     
-    loader = datamodule.train_loader  # 使用验证集评估效率，确保 bs=1
+    loader = datamodule.valid_loader  # 使用验证集评估效率，确保 bs=1
     # === 获取样本输入 确保bs == 1 ===
     sample_inputs = next(iter(loader))
     inputs = tuple([item.to(device) for item in sample_inputs][:-1])
