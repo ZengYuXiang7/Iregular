@@ -33,6 +33,7 @@ class TimeSeriesDataset(Dataset):
             timestamp, feature_idx = timestamp[shuffled_idx], feature_idx[shuffled_idx]
             timestamp, feature_idx = timestamp[:k], feature_idx[:k]
             mask_matrix[i][timestamp, feature_idx] = 1
+
         self.mask_matrix = mask_matrix
 
     def __len__(self):
@@ -48,12 +49,11 @@ class TimeSeriesDataset(Dataset):
             r_end = r_begin + self.config.pred_len
 
             x = self.data["x"][s_begin:s_end]
-
             x_mark = self.data["x_mark"][s_begin:s_end]
-            x_mask = self.mask_matrix[idx]
 
             # 制作缺失值
-            x[x_mask == 1] = 0.0
+            x_mask = self.mask_matrix[idx]
+            # x[x_mask == 1] = 0.0
 
             y = self.data["y"][r_begin:r_end]
             return x, x_mark, x_mask, y

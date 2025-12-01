@@ -10,7 +10,6 @@ from data_process.ts_data import load_weather
 from data_provider.data_getitem_ts import TimeSeriesDataset
 
 def load_data(config):
-    print(config.dataset)
     try:
         with open(f'./data/{config.dataset}_data.pkl', 'rb') as f:
             data = pickle.load(f)

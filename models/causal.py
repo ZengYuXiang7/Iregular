@@ -14,7 +14,9 @@ from models.sada import SADA
 
 def get_causal_matrix(data, method, config):
     data = data.astype(np.float32)
+    
     data = StandardScaler().fit_transform(data)
+    
     start = time.time()
     if method == "PC":
         model = PC(alpha=config.pc_alpha)

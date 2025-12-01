@@ -9,3 +9,31 @@
 
 [2025-10-28 12:12:47] All commands executed successfully.
 
+[2025-11-28 20:51:02] Experiment Start!!!
+[2025-11-28 20:52:17] Experiment interrupted by user.
+[2025-11-28 20:52:17] All commands executed successfully.
+
+[2025-11-28 20:52:23] Experiment Start!!!
+[2025-11-28 20:55:40] Experiment interrupted by user.
+[2025-11-28 20:55:40] All commands executed successfully.
+
+[2025-11-28 20:56:55] Experiment Start!!!
+[2025-11-28 20:56:56] Experiment interrupted by user.
+[2025-11-28 20:56:56] All commands executed successfully.
+
+[2025-11-28 21:02:36] Experiment Start!!!
+[2025-11-28 21:05:51] d_model: 32, Metric: 0.7262
+[2025-11-28 21:09:28] d_model: 64, Metric: 0.7280
+[2025-11-28 21:14:23] d_model: 128, Metric: 0.7280
+[2025-11-28 21:22:27] Experiment interrupted by user.
+[2025-11-28 21:22:27] All commands executed successfully.
+
+[2025-11-28 21:26:02] Experiment Start!!!
+[2025-11-28 21:30:11] Experiment interrupted by user.
+[2025-11-28 21:30:11] All commands executed successfully.
+
+[2025-11-28 21:30:14] Experiment Start!!!
+[2025-11-28 21:35:20] d_model: 128, Metric: 0.2246
+[2025-11-28 21:46:26] d_model: 256, Metric: 0.2193
+[2025-11-28 21:47:06] All commands executed successfully.
+

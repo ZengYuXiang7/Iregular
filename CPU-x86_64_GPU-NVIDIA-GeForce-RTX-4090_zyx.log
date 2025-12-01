@@ -4,3 +4,23 @@
 |2025-10-28 11:26:42| MAE - 0.5323 MSE - 0.5278 RMSE - 0.7254 MAPE - 6.1779 NMAE - 0.8730 NRMSE - 0.9062 Acc_10 - 0.0068 KendallTau - 0.2873 SpearmanRho - 0.4083 train_time - 222.5481
 |2025-10-28 12:12:44| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 96
 |2025-10-28 12:12:44| MAE - 0.5323 MSE - 0.5278 RMSE - 0.7254 MAPE - 6.1779 NMAE - 0.8730 NRMSE - 0.9062 Acc_10 - 0.0068 KendallTau - 0.2873 SpearmanRho - 0.4083 train_time - 150.7791
+|2025-11-28 17:02:49| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 128
+|2025-11-28 17:02:49| MAE - 0.2252 MSE - 0.1841 RMSE - 0.4291 MAPE - 11.5900 SMAPE - 0.5563 NMAE - 0.3698 NRMSE - 0.5368 Acc_10 - 0.0495 KendallTau - 0.7262 SpearmanRho - 0.8741 train_time - 26.4451
+|2025-11-28 17:25:43| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 128
+|2025-11-28 17:25:43| MAE - 0.2217 MSE - 0.1809 RMSE - 0.4253 MAPE - 11.8268 SMAPE - 0.5518 NMAE - 0.3641 NRMSE - 0.5320 Acc_10 - 0.0513 KendallTau - 0.7297 SpearmanRho - 0.8764 train_time - 25.1415
+|2025-11-28 18:08:45| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 256
+|2025-11-28 18:08:45| MAE - 0.2259 MSE - 0.1826 RMSE - 0.4273 MAPE - 11.0737 SMAPE - 0.5605 NMAE - 0.3710 NRMSE - 0.5344 Acc_10 - 0.0504 KendallTau - 0.7247 SpearmanRho - 0.8735 train_time - 39.3259
+|2025-11-28 20:02:24| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 256
+|2025-11-28 20:02:24| MAE - 0.2235 MSE - 0.1800 RMSE - 0.4243 MAPE - 11.2600 SMAPE - 0.5555 NMAE - 0.3670 NRMSE - 0.5307 Acc_10 - 0.0510 KendallTau - 0.7275 SpearmanRho - 0.8755 train_time - 42.9200
+|2025-11-28 21:05:49| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 32
+|2025-11-28 21:05:49| MAE - 0.2241 MSE - 0.1809 RMSE - 0.4253 MAPE - 11.1519 SMAPE - 0.5587 NMAE - 0.3680 NRMSE - 0.5320 Acc_10 - 0.0509 KendallTau - 0.7262 SpearmanRho - 0.8743 train_time - 3.2420
+|2025-11-28 21:09:26| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 64
+|2025-11-28 21:09:26| MAE - 0.2236 MSE - 0.1819 RMSE - 0.4264 MAPE - 9.7347 SMAPE - 0.5543 NMAE - 0.3672 NRMSE - 0.5334 Acc_10 - 0.0513 KendallTau - 0.7280 SpearmanRho - 0.8752 train_time - 5.4290
+|2025-11-28 21:14:21| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 128
+|2025-11-28 21:14:21| MAE - 0.2236 MSE - 0.1812 RMSE - 0.4256 MAPE - 10.9986 SMAPE - 0.5550 NMAE - 0.3671 NRMSE - 0.5324 Acc_10 - 0.0517 KendallTau - 0.7280 SpearmanRho - 0.8752 train_time - 11.7250
+|2025-11-28 21:35:18| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 128
+|2025-11-28 21:35:18| MAE - 0.2246 MSE - 0.1832 RMSE - 0.4280 MAPE - 11.0055 SMAPE - 0.5554 NMAE - 0.3689 NRMSE - 0.5353 Acc_10 - 0.0516 KendallTau - 0.7274 SpearmanRho - 0.8749 train_time - 13.7231
+|2025-11-28 21:46:23| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 256
+|2025-11-28 21:46:23| MAE - 0.2193 MSE - 0.1766 RMSE - 0.4203 MAPE - 10.4231 SMAPE - 0.5486 NMAE - 0.3602 NRMSE - 0.5257 Acc_10 - 0.0522 KendallTau - 0.7328 SpearmanRho - 0.8794 train_time - 50.1296
+|2025-11-29 15:30:55| Model : ours, dataset : weather, spliter_ratio : 7:1:2, d_model : 256
+|2025-11-29 15:30:55| MAE - 0.2196 MSE - 0.1760 RMSE - 0.4196 MAPE - 10.4117 SMAPE - 0.5520 NMAE - 0.3606 NRMSE - 0.5248 Acc_10 - 0.0511 KendallTau - 0.7312 SpearmanRho - 0.8781 train_time - 80.0967

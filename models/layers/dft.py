@@ -11,14 +11,15 @@ class DFT(torch.nn.Module):
         self.top_k = top_k
 
     def forward(self, x):
-        xf = torch.fft.rfft(x)
-        freq = abs(xf)
-        freq[0] = 0
-        top_k_freq, top_list = torch.topk(freq, self.top_k)
-        xf[freq <= top_k_freq.min()] = 0
-        x_season = torch.fft.irfft(xf)
-        x_trend = x - x_season
-        return x + x_season + x_trend
+        L = x.size(1)
+        xf = torch.fft.rfft(x, dim=1)        # [B, L_freq, C]
+        freq = xf.abs()
+        freq[:, 0, :] = 0                   # freq[..., 0] 会是最后一维，这里我们要的是时间频率的 0
+        top_k_freq, _ = torch.topk(freq, self.top_k, dim=1)  # [B, top_k, C]
+        thr = top_k_freq[:, -1, :].unsqueeze(1)  # [B, 1, C]，方便广播
+        xf = torch.where(freq >= thr, xf, xf.new_zeros(()))
+        x_season = torch.fft.irfft(xf, n=L, dim=1)  # [B, L, C] = [512, 96, 21]
+        return x_season
 
 
 class moving_avg(torch.nn.Module):

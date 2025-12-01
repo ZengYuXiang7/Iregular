@@ -1,5 +1,6 @@
 # coding : utf-8
 # Author : Yuxiang Zeng
+# 2025年11月28日20:28:31 备份
 import torch
 from models.layers.feedforward.moe import MoE
 from models.layers.feedforward.smoe import SparseMoE
@@ -157,15 +158,16 @@ class Backbone(torch.nn.Module):
         self.patch_num = (self.seq_len) // self.patch_len
 
         self.denoise_module = DFT(5)
-        self.mask_embedding = torch.nn.Linear(enc_in, self.d_model)
 
-        # Embedding
         self.embedding = torch.nn.Linear(enc_in, self.d_model)
+        # self.embedding = TokenEmbedding(enc_in, self.d_model)
         self.season_model = FourierLayer(pred_len=0, k=3)
         self.trend_model = series_decomp(25)
 
         self.trend_linear = torch.nn.Linear(enc_in, self.d_model)
         self.season_linear = torch.nn.Linear(enc_in, self.d_model)
+
+        self.mask_embedding = torch.nn.Linear(enc_in, self.d_model)
 
         # self.encoder = LinearEncoder(self.d_model * self.patch_len)
         # self.encoder2 = LinearEncoder(self.d_model * self.patch_num)
@@ -174,39 +176,36 @@ class Backbone(torch.nn.Module):
             self.d_model * self.patch_len,
             config.num_layers,
             config.num_heads,
-            is_causal=True,
-            norm_method="rms",
-            ffn_method="ffn",
-            att_method=config.att_method,
+            "rms",
+            "ffn",
+            config.att_method,
         )
 
         self.intra_encoder = Transformer(
             self.d_model * self.patch_num,
             config.num_layers,
             config.num_heads,
-            is_causal=True,
-            norm_method="rms",
-            ffn_method="ffn",
-            att_method=config.att_method,
+            "rms",
+            "ffn",
+            config.att_method,
         )
 
         self.feature_encoder = Transformer(
             self.seq_len,
             1,
             config.num_heads,
-            is_causal=False,
-            norm_method="rms",
-            ffn_method="ffn",
-            att_method=config.att_method,
+            "rms",
+            "ffn",
+            config.att_method,
         )
 
         self.moe = MoE(
             d_model=self.d_model,
             d_ff=self.d_model,
             num_m=1,
-            num_router_experts=8,
+            num_router_experts=5,
             num_share_experts=0,
-            num_k=2,
+            num_k=1,
             loss_coef=0.001,
         )
 
@@ -236,10 +235,9 @@ class Backbone(torch.nn.Module):
         # Feature embedding
         # [bs seq_len d_model]
         x_enc = self.embedding(x)
-        x_season = self.season_linear(x_season)
         x_trend = self.trend_linear(x_trend)
+        x_season = self.season_linear(x_season)
 
-        #
         x_enc = x_enc + x_trend + x_season
 
         # Patch
@@ -293,15 +291,14 @@ class Backbone(torch.nn.Module):
         )
 
         # Patching Fusion
-        x_enc = x_inter + x_intra
-
+        x_enc = x_enc + x_inter + x_intra
         x_enc = rearrange(
             x_enc,
             "bs seq_len d_model -> bs d_model seq_len",
         )
 
         # Feature interaction
-        # x_enc = self.feature_encoder(x_enc)  # [bs, d_model, seq_len]
+        x_enc = self.feature_encoder(x_enc)  # [bs, d_model, seq_len]
         x_enc = rearrange(x_enc, "bs d_model seq_len -> bs seq_len d_model")
 
         # Mixture of Experts

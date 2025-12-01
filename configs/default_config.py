@@ -2,43 +2,43 @@
 # Author : yuxiang Zeng
 from dataclasses import dataclass
 
+
 @dataclass
 class DatasetInfo:
-    path: str = './data'
-    task: str = 'bench201'
-    dataset: str = 'weather'          #  
-    predict_target: str = 'accuracy'  #  latency accuracy 
-    
+    path: str = "./data"
+    task: str = "bench201"
+    dataset: str = "weather"  #
+    predict_target: str = "accuracy"  #  latency accuracy
+
     eval_set: bool = True
     shuffle: bool = False
-    scaler_method: str = 'minmax'
-    spliter_ratio: str = '7:1:2'
-    sample_method: str = 'ours'  # random  ours
-    
-    
+    scaler_method: str = "minmax"
+    spliter_ratio: str = "7:1:2"
+    sample_method: str = "ours"  # random  ours
+
     seq_len: int = 96
-    pred_len: int = 192
-    
-    
+    pred_len: int = 96
+
+
 @dataclass
 class TrainingConfig:
     bs: int = 16
     lr: float = 0.001
     decay: float = 0.0001
-    loss_func: str = 'MSELoss'  # L1Loss  MSELoss
-    optim: str = 'Adam'
+    loss_func: str = "MSELoss"  # L1Loss  MSELoss
+    optim: str = "Adam"
     epochs: int = 200
     patience: int = 30
     verbose: int = 10
-    device: str = 'cuda'
-    monitor_metric: str = 'NMAE'
+    device: str = "cuda"
+    monitor_metric: str = "NMAE"
     use_amp: bool = False
     monitor_reverse: bool = False
 
 
 @dataclass
 class BaseModelConfig:
-    model: str = 'ours'
+    model: str = "ours"
     d_model: int = 40
     num_layers: int = 3
     retrain: bool = True
@@ -57,9 +57,9 @@ class ExperimentConfig:
 
 @dataclass
 class LoggerConfig:
-    logger: str = 'zyx'
-    
-    
+    logger: str = "zyx"
+
+
 @dataclass
 class OtherConfig:
     classification: bool = False
@@ -67,4 +67,3 @@ class OtherConfig:
     try_exp: int = -1
     ts_var: int = 1
     input_size: int = 1
-    

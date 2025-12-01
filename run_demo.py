@@ -6,7 +6,8 @@ from datetime import datetime
 
 # 在这里写下超参数探索空间
 hyper_dict = {
-    "try_exp": [1, 2],  # 1-8
+    # "try_exp": [1, 2],  # 1-8
+    "d_model": [128, 256, 512],  # 1-8
 }
 
 
@@ -22,9 +23,9 @@ def Ablation():
 
 
 def Our_model(hyper=None):
-    # monitor_metric = NMAE KendallTau
+    # monitor_metric = MAE NMAE KendallTau
     once_experiment(
-        "OurModelConfig", hyper_dict, monitor_metric="KendallTau", reverse=True, debug=0
+        "OurModelConfig", hyper_dict, monitor_metric="MAE", reverse=False, debug=0
     )
     return True
 
