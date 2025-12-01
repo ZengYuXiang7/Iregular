@@ -20,7 +20,6 @@ def get_experiment_name(config):
     detail_fields = {
         "Model": config.model,
         "dataset": config.dataset,
-        # 'dst_dataset': config.dst_dataset.split('/')[-1].split('.')[0],
         "spliter_ratio": config.spliter_ratio,
         "d_model": config.d_model,
     }
@@ -54,7 +53,7 @@ def RunExperiments(log, config):
         utils.utils.set_seed(config.seed + runid)
         datamodule = DataModule(config)
         model = Model(config)
-        if runid == 0:
+        if runid == 0 and config.epochs != 0:
             exp.exp_efficiency.evaluate_model_efficiency(datamodule, model, log, config)
         log.plotter.reset_round()
         results = RunOnce(config, runid, model, datamodule, log)

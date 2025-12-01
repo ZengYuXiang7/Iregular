@@ -52,7 +52,7 @@ class BasicModel(torch.nn.Module):
     def __init__(self, config):
         super(BasicModel, self).__init__()
         self.config = config
-        self.scaler = torch.amp.GradScaler(config.device)  # ✅ 初始化 GradScaler
+        self.scaler = torch.amp.GradScaler(config.device)
 
     def forward(self, *x):
         y = self.model(*x)
@@ -65,16 +65,13 @@ class BasicModel(torch.nn.Module):
             self.parameters(), lr=config.lr, decay=config.decay, config=config
         )
 
-        # self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        # self.optimizer, T_max=config.epochs, eta_min=0
-        # )
         if config.model == "ours":
             self.scheduler = build_stable_warmup_hold_cosine(
                 self.optimizer,
                 total_units=config.epochs * 0.6,
-                warmup_ratio=0.05,  # 5% 热身
-                hold_ratio=0.02,  # 2% 保持（可为 0）
-                min_lr_ratio=0.05,  # 末端保留 5% 初始 lr
+                warmup_ratio=0.05,
+                hold_ratio=0.02,
+                min_lr_ratio=0.05,
             )
         else:
             self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -85,117 +82,92 @@ class BasicModel(torch.nn.Module):
                 threshold=0.0,
                 min_lr=1e-6,
             )
+    
 
-    def train_one_epoch(self, dataModule):
-        loss = None
-        self.train()
-        torch.set_grad_enabled(True)
-        t1 = time()
+def exec_train_one_epoch(model, dataModule, config):
+    # 处理 DataParallel 带来的差异：
+    # 如果 model 是 DataParallel，它没有 optimizer 属性，得去 module 里找
+    real_model = model.module if isinstance(model, torch.nn.DataParallel) else model
+    
+    loss = None
+    model.train() # 这里对 DataParallel 调用 train() 是有效的
+    torch.set_grad_enabled(True)
+    t1 = time()
 
-        for train_batch in dataModule.train_loader:
-            all_item = [item.to(self.config.device) for item in train_batch]
+    for train_batch in dataModule.train_loader:
+        all_item = [item.to(config.device) for item in train_batch]
+        inputs, label = all_item[:-1], all_item[-1]
+
+        # 优化器在 real_model (原始模型) 里
+        real_model.optimizer.zero_grad()
+
+        if config.use_amp:
+            with torch.amp.autocast(device_type=config.device):
+                # !!! 关键点 !!! 
+                # 这里调用的是 model (可能是多卡包装器)，而不是 real_model
+                # 这样 inputs 才会自动切分到多张卡上
+                pred = model(*inputs)
+                loss = compute_loss(real_model, pred, label, config)
+
+            real_model.scaler.scale(loss).backward()
+            real_model.scaler.step(real_model.optimizer)
+            real_model.scaler.update()
+        else:
+            pred = model(*inputs)
+            loss = compute_loss(real_model, pred, label, config)
+            loss.backward()
+            real_model.optimizer.step()
+
+    t2 = time()
+    return loss.cpu().item(), t2 - t1
+
+
+def exec_evaluate_one_epoch(model, dataModule, config, mode="valid"):
+    real_model = model.module if isinstance(model, torch.nn.DataParallel) else model
+    
+    model.eval()
+    torch.set_grad_enabled(False)
+    dataloader = (
+        dataModule.valid_loader
+        if mode == "valid" and len(dataModule.valid_loader.dataset) != 0
+        else dataModule.test_loader
+    )
+    preds, reals, val_loss = [], [], 0.0
+
+    context = (
+        torch.amp.autocast(device_type=config.device)
+        if config.use_amp
+        else contextlib.nullcontext()
+    )
+    with context:
+        for batch in dataloader:
+            all_item = [item.to(config.device) for item in batch]
             inputs, label = all_item[:-1], all_item[-1]
+            
+            # 多卡并行推理
+            pred = model(*inputs)
 
-            self.optimizer.zero_grad()
+            if mode == "valid":
+                val_loss += compute_loss(real_model, pred, label, config)
 
-            if self.config.use_amp:
-                with torch.amp.autocast(device_type=self.config.device):
-                    pred = self.forward(*inputs)
-                    loss = compute_loss(self, pred, label, self.config)
+            if config.classification:
+                pred = torch.max(pred, 1)[1]
 
-                self.scaler.scale(loss).backward()
-                self.scaler.step(self.optimizer)
-                self.scaler.update()
-            else:
-                pred = self.forward(*inputs)
-                loss = compute_loss(self, pred, label, self.config)
-                loss.backward()
-                self.optimizer.step()
+            preds.append(pred)
+            reals.append(label)
 
-        t2 = time()
-        return loss, t2 - t1
+    reals = torch.cat(reals, dim=0)
+    preds = torch.cat(preds, dim=0)
 
-    def evaluate_one_epoch(self, dataModule, mode="valid"):
-        self.eval()
-        torch.set_grad_enabled(False)
-        dataloader = (
-            dataModule.valid_loader
-            if mode == "valid" and len(dataModule.valid_loader.dataset) != 0
-            else dataModule.test_loader
-        )
-        preds, reals, val_loss = [], [], 0.0
+    if config.dataset != "weather":
+        reals, preds = dataModule.y_scaler.inverse_transform(reals), dataModule.y_scaler.inverse_transform(preds)
 
-        context = (
-            torch.amp.autocast(device_type=self.config.device)
-            if self.config.use_amp
-            else contextlib.nullcontext()
-        )
-        with context:
-            for batch in dataloader:
-                all_item = [item.to(self.config.device) for item in batch]
-                inputs, label = all_item[:-1], all_item[-1]
-                pred = self.forward(*inputs)
+    if mode == "valid":
+        # 调度器也在 real_model 里
+        # 注意：UserWarning 可能会提示 scheduler.step() 应该在 optimizer.step() 之后，但这里逻辑没大问题
+        if isinstance(real_model.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+             real_model.scheduler.step(val_loss)
+        else:
+             real_model.scheduler.step()
 
-                if mode == "valid":
-                    val_loss += compute_loss(self, pred, label, self.config)
-
-                if self.config.classification:
-                    pred = torch.max(pred, 1)[1]
-
-                preds.append(pred)
-                reals.append(label)
-
-        reals = torch.cat(reals, dim=0)
-        preds = torch.cat(preds, dim=0)
-
-        if self.config.dataset != "weather":
-            reals, preds = dataModule.y_scaler.inverse_transform(
-                reals
-            ), dataModule.y_scaler.inverse_transform(preds)
-
-        if mode == "valid":
-            # self.scheduler.step(val_loss)
-            self.scheduler.step()
-
-        return ErrorMetrics(reals, preds, self.config)
-
-    # 专门为全数据集做的实验
-    def evaluate_whole_dataset(self, dataModule, mode="whole"):
-        self.eval()
-        torch.set_grad_enabled(False)
-
-        preds, reals = [], []
-
-        def get_pred_and_real(loader):
-            context = (
-                torch.amp.autocast(device_type=self.config.device)
-                if self.config.use_amp
-                else contextlib.nullcontext()
-            )
-            with context:
-                for batch in loader:
-                    all_item = [item.to(self.config.device) for item in batch]
-                    inputs, label = all_item[:-1], all_item[-1]
-                    pred = self.forward(*inputs)
-
-                    if mode == "valid":
-                        val_loss += compute_loss(self, pred, label, self.config)
-
-                    if self.config.classification:
-                        pred = torch.max(pred, 1)[1]
-
-                    preds.append(pred)
-                    reals.append(label)
-
-        get_pred_and_real(dataModule.train_loader)
-        get_pred_and_real(dataModule.valid_loader)
-        get_pred_and_real(dataModule.test_loader)
-
-        reals = torch.cat(reals, dim=0)
-        preds = torch.cat(preds, dim=0)
-
-        reals, preds = dataModule.y_scaler.inverse_transform(
-            reals
-        ), dataModule.y_scaler.inverse_transform(preds)
-
-        return ErrorMetrics(reals, preds, self.config)
+    return ErrorMetrics(reals, preds, config)

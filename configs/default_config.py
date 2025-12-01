@@ -30,7 +30,8 @@ class TrainingConfig:
     epochs: int = 200
     patience: int = 30
     verbose: int = 10
-    device: str = "cuda"
+    device: str = "cuda:0"
+    multi_gpu: bool = False
     monitor_metric: str = "NMAE"
     use_amp: bool = False
     monitor_reverse: bool = False

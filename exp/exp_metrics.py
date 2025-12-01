@@ -62,8 +62,8 @@ def compute_regression_metrics(realVec, estiVec):
         "SMAPE": SMAPE,
         "NMAE": NMAE,
         "NRMSE": NRMSE,
-        "Acc_10": Acc[2],
-        "KendallTau": kendall_tau,
+        # "Acc_10": Acc[2],
+        # "KendallTau": kendall_tau,
         "SpearmanRho": spearman_rho,
     }
 

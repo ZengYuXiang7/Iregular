@@ -110,31 +110,31 @@ class Logger:
         print(f"\033[1;38;2;151;200;129m{timestamp}\033[0m\033[1m{string}\033[0m")
 
     # 展示一次完整实验结果
-    def show_results(self, result_error, sum_time):
-        monitor = self.config.monitor_metrics
-        summary = f"Valid{monitor}={-result_error[monitor]:.4f} ｜ "
-        summary += " ".join([f"{k}={v:.4f}" for k, v in result_error.items()])
+    def show_results(self, results, sum_time):
+        monitor = self.config.monitor_metric
+        summary = f"Valid{monitor}={-results[monitor]:.4f} ｜ "
+        summary += " ".join([f"{k}={v:.4f}" for k, v in results.items()])
         summary += f" time={sum_time:.1f} s"
         self.only_print(summary)
 
     # 展示训练中的某轮 epoch 的误差
     def show_epoch_error(
-        self, runId, epoch, monitor, epoch_loss, result_error, train_time
+        self, runid, epoch, monitor, epoch_loss, results, train_time
     ):
         if self.config.verbose and epoch % self.config.verbose == 0 and epoch > 0:
             self.only_print(self.exper_detail)
             best = f"Best Epoch {monitor.best_epoch} {self.config.monitor_metric} = {-monitor.best_score:.4f}  now = {epoch - monitor.best_epoch}"
             self.only_print(best)
-            summary = f"Round={runId + 1} Epoch={epoch + 1:03d} Loss={epoch_loss:.4f} "
-            summary += " ".join([f"v{k}={v:.4f}" for k, v in result_error.items()])
+            summary = f"Round={runid + 1} Epoch={epoch + 1:03d} Loss={epoch_loss:.4f} "
+            summary += " ".join([f"v{k}={v:.4f}" for k, v in results.items()])
             summary += f" time={sum(train_time):.1f} s"
             self.only_print(summary)
 
     # 展示最终测试结果
-    def show_test_error(self, runId, monitor, result_error, sum_time):
-        summary = f"Round={runId + 1} BestEpoch={monitor.best_epoch:3d} "
+    def show_test_error(self, runid, monitor, results, sum_time):
+        summary = f"Round={runid + 1} BestEpoch={monitor.best_epoch:3d} "
         summary += f"Valid{self.config.monitor_metric}={-monitor.best_score:.4f} ｜ "
-        summary += " ".join([f"{k}={v:.4f}" for k, v in result_error.items()])
+        summary += " ".join([f"{k}={v:.4f}" for k, v in results.items()])
         summary += f" time={sum_time:.1f} s"
         self.log(summary)
 

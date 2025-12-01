@@ -4,7 +4,7 @@ import torch
 from models.layers.feedforward.moe import MoE
 from models.layers.feedforward.smoe import SparseMoE
 from models.layers.transformer import Transformer
-from models.layers.encoder.graph_enc import GnnFamily
+# from models.layers.encoder.graph_enc import GnnFamily
 from torchdiffeq import odeint_adjoint as odeadj
 from einops import *
 from models.layers.dft import *

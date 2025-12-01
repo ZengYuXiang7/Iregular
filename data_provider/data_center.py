@@ -9,7 +9,7 @@ import pickle
 import torch
 from data_provider.data_scaler import get_scaler
 import numpy as np
-import dgl
+# import dgl
 from tqdm import *
 
 from data_provider.data_smapler import FixedLengthBatchSampler
