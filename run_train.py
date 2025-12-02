@@ -44,19 +44,23 @@ def get_experiment_name(config):
 
 def RunExperiments(log, config):
     log("*" * 20 + "Experiment Start" + "*" * 20)
-    log(f"Dataset : {config.dataset}")
-
     metrics = collections.defaultdict(list)
 
     for runid in range(config.rounds):
         config.runid = runid
+        log.set_runid(runid)
         utils.utils.set_seed(config.seed + runid)
         datamodule = DataModule(config)
         model = Model(config)
-        if runid == 0 and config.epochs != 0:
+        if runid == 0:
             exp.exp_efficiency.evaluate_model_efficiency(datamodule, model, log, config)
+            log.log_config_text(config)
         log.plotter.reset_round()
         results = RunOnce(config, runid, model, datamodule, log)
+        log.log_model_graph(
+            model, datamodule, config.device
+        )  # 记录模型图 (可能会报错，如果不兼容可以直接注释)
+        # log.log_hparams(config, results)
         for key in results:
             metrics[key].append(results[key])
         log.plotter.append_round()

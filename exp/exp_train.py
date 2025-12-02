@@ -11,7 +11,7 @@ from data_provider.data_center import DataModule
 
 
 def RunOnce(config, runid, model: BasicModel, datamodule: DataModule, log: Logger):
-    
+
     # 创建保存模型的目录
     os.makedirs(f"./checkpoints/{config.model}", exist_ok=True)
     model_path = f"./checkpoints/{config.model}/{log.filename}_round_{runid}.pt"
@@ -49,7 +49,6 @@ def RunOnce(config, runid, model: BasicModel, datamodule: DataModule, log: Logge
             torch.load(model_path, weights_only=True, map_location="cpu")
         )
 
-    
     # 若需要重新训练
     if retrain_required:
         results = full_retrain(
@@ -64,9 +63,16 @@ def RunOnce(config, runid, model: BasicModel, datamodule: DataModule, log: Logge
     return results
 
 
-def full_retrain(config, model: BasicModel, datamodule: DataModule, log: Logger, runid: int, model_path: str):
-    
-    if config.device != 'cpu':
+def full_retrain(
+    config,
+    model: BasicModel,
+    datamodule: DataModule,
+    log: Logger,
+    runid: int,
+    model_path: str,
+):
+
+    if config.device != "cpu":
         if torch.cuda.device_count() > 1 and config.multi_gpu:
             log.only_print(f"使用 DataParallel, GPU 数量：{torch.cuda.device_count()}")
             model = torch.nn.DataParallel(model)
@@ -75,17 +81,16 @@ def full_retrain(config, model: BasicModel, datamodule: DataModule, log: Logger,
             log.only_print("单 GPU 训练模式")
             model.to(config.device)
             model.setup_optimizer(config)
-            # 模型编译（若适用）
-            try:
-                model.compile()
-            except Exception as e:
-                print(f"Skip the model.compile() because {e}")
-    
+            # try:
+            # model.compile()
+            # except Exception as e:
+            # print(f"Skip the model.compile() because {e}")
+
     # 设置EarlyStopping监控器
     monitor = EarlyStopping(config)
-    
+
     train_time = []
-    
+
     if config.epochs != 0:
         t = trange(config.epochs, leave=True)
         for epoch in t:
@@ -98,7 +103,9 @@ def full_retrain(config, model: BasicModel, datamodule: DataModule, log: Logger,
             train_time.append(time_cost)
 
             # 验证集上评估当前模型误差
-            valid_error = exec_evaluate_one_epoch(model, datamodule, config, mode="valid")
+            valid_error = exec_evaluate_one_epoch(
+                model, datamodule, config, mode="valid"
+            )
 
             # 将当前epoch的验证误差传递给early stopping模块进行跟踪
             monitor.track_one_epoch(epoch, model, valid_error, config.monitor_metric)
@@ -143,8 +150,7 @@ def full_retrain(config, model: BasicModel, datamodule: DataModule, log: Logger,
         torch.save(monitor.best_model, model_path)
         log(f"Model parameters saved to {model_path}")
         print("-" * 130)
-        
-        
+
     elif config.epochs == 0:
         # 直接在未训练的模型上评估测试集性能
         log("Directly evaluate untrained model on test set...")
@@ -153,7 +159,7 @@ def full_retrain(config, model: BasicModel, datamodule: DataModule, log: Logger,
         log.show_test_error(runid=-1, monitor=monitor, results=results, sum_time=0.0)
         log("*" * 20 + "Experiment Exit" + "*" * 20)
         exit(0)
-        
+
     # 将训练时间加入返回结果中
     results["train_time"] = sum_time
     return results

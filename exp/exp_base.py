@@ -82,15 +82,15 @@ class BasicModel(torch.nn.Module):
                 threshold=0.0,
                 min_lr=1e-6,
             )
-    
+
 
 def exec_train_one_epoch(model, dataModule, config):
     # 处理 DataParallel 带来的差异：
     # 如果 model 是 DataParallel，它没有 optimizer 属性，得去 module 里找
     real_model = model.module if isinstance(model, torch.nn.DataParallel) else model
-    
+
     loss = None
-    model.train() # 这里对 DataParallel 调用 train() 是有效的
+    model.train()  # 这里对 DataParallel 调用 train() 是有效的
     torch.set_grad_enabled(True)
     t1 = time()
 
@@ -103,7 +103,7 @@ def exec_train_one_epoch(model, dataModule, config):
 
         if config.use_amp:
             with torch.amp.autocast(device_type=config.device):
-                # !!! 关键点 !!! 
+                # !!! 关键点 !!!
                 # 这里调用的是 model (可能是多卡包装器)，而不是 real_model
                 # 这样 inputs 才会自动切分到多张卡上
                 pred = model(*inputs)
@@ -124,13 +124,13 @@ def exec_train_one_epoch(model, dataModule, config):
 
 def exec_evaluate_one_epoch(model, dataModule, config, mode="valid"):
     real_model = model.module if isinstance(model, torch.nn.DataParallel) else model
-    
+
     model.eval()
     torch.set_grad_enabled(False)
     dataloader = (
         dataModule.valid_loader
         if mode == "valid" and len(dataModule.valid_loader.dataset) != 0
-        else dataModule.test_loader
+        else dataModule.get_testloader()
     )
     preds, reals, val_loss = [], [], 0.0
 
@@ -143,7 +143,7 @@ def exec_evaluate_one_epoch(model, dataModule, config, mode="valid"):
         for batch in dataloader:
             all_item = [item.to(config.device) for item in batch]
             inputs, label = all_item[:-1], all_item[-1]
-            
+
             # 多卡并行推理
             pred = model(*inputs)
 
@@ -160,14 +160,14 @@ def exec_evaluate_one_epoch(model, dataModule, config, mode="valid"):
     preds = torch.cat(preds, dim=0)
 
     if config.dataset != "weather":
-        reals, preds = dataModule.y_scaler.inverse_transform(reals), dataModule.y_scaler.inverse_transform(preds)
+        reals, preds = dataModule.y_scaler.inverse_transform(
+            reals
+        ), dataModule.y_scaler.inverse_transform(preds)
 
     if mode == "valid":
-        # 调度器也在 real_model 里
-        # 注意：UserWarning 可能会提示 scheduler.step() 应该在 optimizer.step() 之后，但这里逻辑没大问题
         if isinstance(real_model.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-             real_model.scheduler.step(val_loss)
+            real_model.scheduler.step(val_loss)
         else:
-             real_model.scheduler.step()
+            real_model.scheduler.step()
 
     return ErrorMetrics(reals, preds, config)
